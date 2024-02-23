@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Git User Information</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+
+	<div class="container">
+		<form action="/gituserinformation" method="post" id="form">
+			<input type="text" th:value="${userName}" name="userName" />
+			<button type="submit" id="button">Submit</button>
+		</form>
+	</div>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Rpository name</th>
+				<th>Owner login</th>
+				<th>Branch: Name = Last SHA
+
+				</th>
+
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="data : ${viewDataList}">
+				<td th:text="${data.repositoryName}"></td>
+				<td th:text="${data.ownersLogin}"></td>
+				<td th:text="${data.branchSha}"></td>
+			</tr>
+		</tbody>
+	</table>
+</body>
+
+</html>
+
+
+
+<tbody>
