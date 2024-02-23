@@ -10,31 +10,38 @@
 </head>
 
 <body>
+
+
 	<div class="container">
 		<form action="/gituserinformation" method="post" id="form">
 			<input type="text" th:value="${userName}" name="userName" />
 			<button type="submit" id="button">Submit</button>
 		</form>
-		<table class="table table-bordered">
-			<thead>
-				<tr>
-					<th>Repository Name</th>
-					<th>Owner Login</th>
-					<th>Email</th>
-					<th>Branch name</th>
-					<th>Commits</th>
-					<th>SHA</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="repository : ${repositories}">
-					<td th:text="${repository.name}"></td>
-					<td th:text="${repository.fullname}"></td>
-				</tr>
-				<tr><p th:text="|Hello, ${name}!|" /></tr>
-			</tbody>
-		</table>
 	</div>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Rpository name</th>
+				<th>Owner login</th>
+				<th>Branch: Name = Last SHA
+
+				</th>
+
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="data : ${viewDataList}">
+				<td th:text="${data.repositoryName}"></td>
+				<td th:text="${data.ownersLogin}"></td>
+				<td th:text="${data.branchSha}"></td>
+			</tr>
+		</tbody>
+	</table>
 </body>
 
 </html>
+
+
+
+<tbody>
