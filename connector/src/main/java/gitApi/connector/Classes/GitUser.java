@@ -2,7 +2,10 @@ package gitApi.connector.Classes;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class GitUser {
+	@JsonProperty("login")
 	public String login;
 	public int id;
 	public String node_id;

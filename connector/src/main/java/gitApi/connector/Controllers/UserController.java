@@ -5,10 +5,13 @@ import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,17 +36,27 @@ public class UserController {
 	private final RestTemplate restTemplate;
 	private final Logger log;
 	private final String uriString;
-	private GitUser gitUser;
-	private GitUserRepositories[] gitUserRepositories;
-	private GitUserRepositoryBranches[] gitUserRepositoryBranches;
+	private ResponseEntity<GitUser> gitUser;
+	private ResponseEntity<GitUserRepositories[]> gitUserRepositories;
+	private ResponseEntity<GitUserRepositoryBranches[]> gitUserRepositoryBranches;
 	// private RepositoryService repositoryService;
 	private JSONObject jsonResponse = new JSONObject();
 	private LinkedList<RepoViewData> viewDataList = new LinkedList();
+
+	private String tokenString;
+	private HttpHeaders httpHeaders;
+
+	private HttpEntity<String> request;
 
 	public UserController() {
 		this.uriString = "https://api.github.com/users/";
 		this.restTemplate = new RestTemplate();
 		this.log = LoggerFactory.getLogger(UserController.class);
+		this.tokenString = "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";
+		this.httpHeaders = new HttpHeaders();
+		this.httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		this.httpHeaders.setBearerAuth(tokenString);
+		this.request = new HttpEntity<String>(httpHeaders);
 	}
 
 	@GetMapping(path = "/gituserinformation")
@@ -61,7 +73,7 @@ public class UserController {
 		} catch (HttpClientErrorException e) {
 			JSONObject errorResponseJsonObject = new JSONObject();
 			try {
-				//TODO: json look
+				// TODO: json look
 				errorResponseJsonObject.put("errorStatus", e.getStatusCode());
 				errorResponseJsonObject.put("errorMessage", e.getMessage());
 			} catch (JSONException e1) {
@@ -83,14 +95,18 @@ public class UserController {
 
 	public String getData(String username, Model model) throws HttpClientErrorException {
 		log.info("getData");
-		this.gitUser = restTemplate.getForObject(uriString + username, GitUser.class);
+		// https://api.github.com/users/DOYG-N-DTYD
+		this.gitUser = restTemplate.exchange(uriString + username, HttpMethod.GET, request, GitUser.class);
 		return "gituserinformation";
 	}
 
+	// Git user repositories change to entity in exchange method
 	public void getUserRepos() {
 		log.info("getUserRepos");
-		this.gitUserRepositories = restTemplate.getForObject(gitUser.repos_url, GitUserRepositories[].class);
-		for (GitUserRepositories repo : gitUserRepositories) {
+		this.gitUserRepositories = restTemplate.exchange(gitUser.getBody().getRepos_url(), HttpMethod.GET, request,
+				GitUserRepositories[].class);
+		System.out.println(this.gitUserRepositories.getBody());
+		for (GitUserRepositories repo : gitUserRepositories.getBody()) {
 			if (repo.isFork()) {
 				continue;
 			}
@@ -115,10 +131,10 @@ public class UserController {
 		StringBuilder urlStringBuilder = new StringBuilder(
 				repositoryBranchesUrlString.substring(0, repositoryBranchesUrlString.indexOf("{")));
 
-		this.gitUserRepositoryBranches = restTemplate.getForObject(urlStringBuilder.toString(),
+		this.gitUserRepositoryBranches = restTemplate.exchange(urlStringBuilder.toString(), HttpMethod.GET, request,
 				GitUserRepositoryBranches[].class);
-		
-		for (GitUserRepositoryBranches gitUserRepositoryBranches : gitUserRepositoryBranches) {
+
+		for (GitUserRepositoryBranches gitUserRepositoryBranches : gitUserRepositoryBranches.getBody()) {
 
 			String branch = gitUserRepositoryBranches.getBranchName();
 			String sha = gitUserRepositoryBranches.getBranchCommits().sha;
@@ -129,6 +145,7 @@ public class UserController {
 	@PostMapping("/gituserinformation")
 	public String usernameField(@RequestParam("userName") String userName, Model model) {
 		log.info("usernameField");
+		this.viewDataList = new LinkedList(); // when press button send clear previous results
 		try {
 			getData(userName, model);
 		} catch (HttpClientErrorException e) {
