@@ -43,20 +43,10 @@ public class UserController {
 	private JSONObject jsonResponse = new JSONObject();
 	private LinkedList<RepoViewData> viewDataList = new LinkedList();
 
-	private String tokenString;
-	private HttpHeaders httpHeaders;
-
-	private HttpEntity<String> request;
-
 	public UserController() {
 		this.uriString = "https://api.github.com/users/";
 		this.restTemplate = new RestTemplate();
 		this.log = LoggerFactory.getLogger(UserController.class);
-		this.tokenString = "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";
-		this.httpHeaders = new HttpHeaders();
-		this.httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-		this.httpHeaders.setBearerAuth(tokenString);
-		this.request = new HttpEntity<String>(httpHeaders);
 	}
 
 	@GetMapping(path = "/gituserinformation")
@@ -68,42 +58,42 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.GET, path = "gituserinformation/{username}")
 	public @ResponseBody ResponseEntity getEntity(@PathVariable("username") String username, Model model) {
 		log.info("getEntity");
+		this.viewDataList = new LinkedList(); 
 		try {
 			getData(username, model);
 		} catch (HttpClientErrorException e) {
 			JSONObject errorResponseJsonObject = new JSONObject();
 			try {
-				// TODO: json look
-				errorResponseJsonObject.put("errorStatus", e.getStatusCode());
-				errorResponseJsonObject.put("errorMessage", e.getMessage());
+				// curl ok, model->html->parse
+				errorResponseJsonObject.put("errorStatus", e.getStatusCode() + "<br>");
+				errorResponseJsonObject.put("errorMessage", "username : " + username + " " + e.getMessage());
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			}
 			return new ResponseEntity<>(errorResponseJsonObject.toString(), HttpStatus.CREATED);
 		}
 		getUserRepos();
-		return new ResponseEntity<>(RepoViewDataConverter(), HttpStatus.CREATED);
+		return new ResponseEntity<>(viewDataList, HttpStatus.CREATED);
 	}
 
-	public String RepoViewDataConverter() {
-		StringBuilder outData = new StringBuilder();
-		for (RepoViewData data : viewDataList) {
-			outData.append(data.convertToHtml());
-		}
-		return outData.toString();
-	}
+	// public String RepoViewDataConverter() {
+	// 	StringBuilder outData = new StringBuilder();
+	// 	for (RepoViewData data : viewDataList) {
+	// 		outData.append(data.convertToHtml());
+	// 	}
+	// 	return outData.toString();
+	// }
 
 	public String getData(String username, Model model) throws HttpClientErrorException {
 		log.info("getData");
 		// https://api.github.com/users/DOYG-N-DTYD
-		this.gitUser = restTemplate.exchange(uriString + username, HttpMethod.GET, request, GitUser.class);
+		this.gitUser = restTemplate.exchange(uriString + username, HttpMethod.GET, httpRequest(), GitUser.class);
 		return "gituserinformation";
 	}
 
-	// Git user repositories change to entity in exchange method
 	public void getUserRepos() {
 		log.info("getUserRepos");
-		this.gitUserRepositories = restTemplate.exchange(gitUser.getBody().getRepos_url(), HttpMethod.GET, request,
+		this.gitUserRepositories = restTemplate.exchange(gitUser.getBody().getRepos_url(), HttpMethod.GET, httpRequest(),
 				GitUserRepositories[].class);
 		System.out.println(this.gitUserRepositories.getBody());
 		for (GitUserRepositories repo : gitUserRepositories.getBody()) {
@@ -131,7 +121,7 @@ public class UserController {
 		StringBuilder urlStringBuilder = new StringBuilder(
 				repositoryBranchesUrlString.substring(0, repositoryBranchesUrlString.indexOf("{")));
 
-		this.gitUserRepositoryBranches = restTemplate.exchange(urlStringBuilder.toString(), HttpMethod.GET, request,
+		this.gitUserRepositoryBranches = restTemplate.exchange(urlStringBuilder.toString(), HttpMethod.GET, httpRequest(),
 				GitUserRepositoryBranches[].class);
 
 		for (GitUserRepositoryBranches gitUserRepositoryBranches : gitUserRepositoryBranches.getBody()) {
@@ -155,6 +145,7 @@ public class UserController {
 		} catch (Exception e) {
 			model.addAttribute("errorStatus", e.getMessage());
 			model.addAttribute("errorMessage", e.toString());
+			return "error";
 		}
 		getUserRepos();
 		processDataToView(model);
@@ -169,5 +160,13 @@ public class UserController {
 			// branchSha.forEach((key, val) -> System.out.println("Branch name : " + key + "
 			// " + "SHA : " + val));
 		}
+	}
+
+	public HttpEntity httpRequest(){
+		String tokenString = "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";
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		httpHeaders.setBearerAuth(tokenString);
+		return new HttpEntity<String>(httpHeaders); // request
 	}
 }
