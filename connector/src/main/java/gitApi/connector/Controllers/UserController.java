@@ -102,7 +102,7 @@ public class UserController {
 			}
 			RepoViewData dataForView = new RepoViewData();
 			dataForView.setRepositoryName(repo.getName());
-			dataForView.setOwnersLogin(repo.getOwner().Ownerlogin);
+			dataForView.setOwnersLogin(repo.getOwner().getOwnerlogin());
 			getUserReposBranches(repo, dataForView);
 			try {
 				jsonResponse.put(jsonResponse.length() + " ", repo.getName());
@@ -127,7 +127,7 @@ public class UserController {
 		for (GitUserRepositoryBranches gitUserRepositoryBranches : gitUserRepositoryBranches.getBody()) {
 
 			String branch = gitUserRepositoryBranches.getBranchName();
-			String sha = gitUserRepositoryBranches.getBranchCommits().sha;
+			String sha = gitUserRepositoryBranches.getBranchCommits().getSha();
 			dataForView.setBranchSha(branch, sha);
 		}
 	}
