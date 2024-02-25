@@ -65,12 +65,12 @@ public class UserController {
 			JSONObject errorResponseJsonObject = new JSONObject();
 			try {
 				// curl ok, model->html->parse
-				errorResponseJsonObject.put("errorStatus", e.getStatusCode() + "<br>");
+				errorResponseJsonObject.put("errorStatus", e.getStatusCode());
 				errorResponseJsonObject.put("errorMessage", "username : " + username + " " + e.getMessage());
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			}
-			return new ResponseEntity<>(errorResponseJsonObject.toString(), HttpStatus.CREATED);
+			return new ResponseEntity<>(errorResponseJsonObject.toString(), HttpStatus.EXPECTATION_FAILED);
 		}
 		getUserRepos();
 		return new ResponseEntity<>(viewDataList, HttpStatus.CREATED);
@@ -163,7 +163,7 @@ public class UserController {
 	}
 
 	public HttpEntity httpRequest(){
-		String tokenString = "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";
+		String tokenString = "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";
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		httpHeaders.setBearerAuth(tokenString);
