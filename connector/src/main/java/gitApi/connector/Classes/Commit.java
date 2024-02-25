@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Commit {
 	@JsonProperty("sha")
-	public String sha;
+	private String sha;
 	@JsonProperty("url")
-	public String url;
+	private String url;
     
 	public String getSha() {
 		return sha;

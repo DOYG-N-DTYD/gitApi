@@ -163,7 +163,7 @@ public class UserController {
 	}
 
 	public HttpEntity httpRequest(){
-		String tokenString = "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";
+		String tokenString = "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";
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		httpHeaders.setBearerAuth(tokenString);

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Owner {
 	@JsonProperty("login")
-	public String Ownerlogin;
+	private String Ownerlogin;
 	@JsonProperty("id")
-	public int Ownerid;
+	private int Ownerid;
 	
 	public String getOwnerlogin() {
 		return Ownerlogin;
